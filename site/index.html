@@ -69,7 +69,7 @@
 
   /* ---------- Navegação ---------- */
   .nav { position: fixed; inset: 0 0 auto; z-index: 50; transition: background-color 250ms ease, border-color 250ms ease; border-bottom: 1px solid transparent; }
-  .nav.solid { background: rgba(11,10,9,.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-color: var(--line); }
+  .nav.solid { background: rgba(11,10,9,.94); border-color: var(--line); }
   .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 20px; }
   .logo { display: flex; align-items: baseline; gap: 6px; text-decoration: none; font-family: var(--display); font-size: 26px; letter-spacing: .01em; text-transform: uppercase; }
   .logo em { font-family: var(--serif); font-style: italic; text-transform: none; font-size: 26px; color: var(--pink); }
@@ -89,7 +89,8 @@
   .media.ready canvas { opacity: 1; }
   .media::after { content: ""; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(180deg, rgba(11,10,9,.55) 0%, transparent 22%, transparent 48%, rgba(11,10,9,.88) 78%, var(--bg) 100%); }
-  .layer { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: max(40px, env(safe-area-inset-bottom)); will-change: opacity, transform; }
+  .layer { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: max(40px, env(safe-area-inset-bottom)); will-change: opacity, transform; transform: translateZ(0); }
+  .media { will-change: transform; transform: translateZ(0); }
   .layer .wrap { position: relative; }
   .hero h1 { font-family: var(--display); font-weight: 400; text-transform: uppercase; line-height: .92; font-size: clamp(56px, 9.5vw, 132px); letter-spacing: -0.01em; }
   .hero h1 .ln { display: block; overflow: hidden; padding-top: .08em; margin-top: -.08em; }
@@ -269,8 +270,8 @@
   <section class="hero" id="topo">
     <div class="sticky">
       <div class="media" id="media">
-        <img id="still" src="frames/f001.jpg" alt="Cadeira de barbeiro antiga num salão escuro; tesoura e navalha sobem no ar e viram o letreiro neon Pai e Filho" width="720" height="1280" fetchpriority="high">
-        <canvas id="seq" width="720" height="1280" aria-hidden="true"></canvas>
+        <img id="still" src="frames/f001.jpg" alt="Cadeira de barbeiro antiga num salão escuro; tesoura e navalha sobem no ar e viram o letreiro neon Pai e Filho" width="600" height="1066" fetchpriority="high">
+        <canvas id="seq" width="600" height="1066" aria-hidden="true"></canvas>
       </div>
 
       <div class="layer l1" id="l1">
@@ -426,57 +427,72 @@
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
   // Hero: a rolagem controla os quadros do vídeo
-  const FRAMES = 120, hero = document.getElementById("topo"), media = document.getElementById("media");
-  const canvas = document.getElementById("seq"), ctx = canvas.getContext("2d");
+  // Fluidez: cada quadro é decodificado antes (ImageBitmap), a posição segue a rolagem
+  // com suavização, e só redesenha quando o quadro muda.
+  const FRAMES = 180, W = 600, H = 1066;
+  const hero = document.getElementById("topo"), media = document.getElementById("media");
+  const canvas = document.getElementById("seq"), ctx = canvas.getContext("2d", { alpha: false });
   const L1 = document.getElementById("l1"), L2 = document.getElementById("l2"), L3 = document.getElementById("l3"), l3btn = document.getElementById("l3btn");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const imgs = new Array(FRAMES);
-  let current = -1;
+  const bmp = new Array(FRAMES);
   const src = (i) => "frames/f" + String(i + 1).padStart(3, "0") + ".jpg";
-  function load(i) {
-    if (imgs[i]) return imgs[i];
-    const im = new Image(); im.decoding = "async"; im.src = src(i);
-    im.onload = () => { if (Math.abs(i - target) < 3) draw(target); };
-    return (imgs[i] = im);
+  let drawn = -1, shown = 0, goal = 0, running = false;
+
+  async function load(i) {
+    try {
+      const im = new Image(); im.src = src(i); await im.decode();
+      bmp[i] = window.createImageBitmap ? await createImageBitmap(im) : im;
+      if (drawn < 0 || Math.abs(i - Math.round(shown)) < Math.abs(drawn - Math.round(shown))) { drawn = -2; kick(); }
+    } catch (e) {}
   }
-  function nearestLoaded(i) {
-    for (let d = 0; d < FRAMES; d++) {
-      for (const j of [i - d, i + d]) if (j >= 0 && j < FRAMES && imgs[j] && imgs[j].complete && imgs[j].naturalWidth) return j;
-    }
+  function nearest(i) {
+    if (bmp[i]) return i;
+    for (let d = 1; d < FRAMES; d++) { if (i - d >= 0 && bmp[i - d]) return i - d; if (i + d < FRAMES && bmp[i + d]) return i + d; }
     return -1;
   }
-  let target = 0;
-  function draw(i) {
-    const j = nearestLoaded(i);
-    if (j < 0 || j === current) return;
-    ctx.drawImage(imgs[j], 0, 0, 720, 1280);
-    current = j;
-    media.classList.add("ready");
+  function paint(i) {
+    const j = nearest(i);
+    if (j < 0 || j === drawn) return;
+    ctx.drawImage(bmp[j], 0, 0, W, H);
+    drawn = j;
+    if (!media.classList.contains("ready")) media.classList.add("ready");
   }
-  // carrega em ordem espaçada: primeiro 1 a cada 8, depois o resto
-  const order = [];
-  for (const step of [8, 4, 2, 1]) for (let i = 0; i < FRAMES; i += step) if (!order.includes(i)) order.push(i);
-  if (reduce) { load(FRAMES - 1); } else { let k = 0; (function next() { const n = Math.min(order.length, k + 6); for (; k < n; k++) load(order[k]); if (k < order.length) setTimeout(next, 60); })(); }
+  // ordem de carga: espaçada primeiro (1 a cada 12, 6, 3...), 6 ao mesmo tempo
+  const order = [], seen = new Set();
+  for (const step of [12, 6, 3, 1]) for (let i = 0; i < FRAMES; i += step) if (!seen.has(i)) { seen.add(i); order.push(i); }
+  if (reduce) load(FRAMES - 1);
+  else { let k = 0; const worker = async () => { while (k < order.length) await load(order[k++]); }; for (let n = 0; n < 6; n++) worker(); }
 
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const fade = (p, a, b, c, d) => p < a || p > d ? 0 : p < b ? (p - a) / (b - a) : p <= c ? 1 : 1 - (p - c) / (d - c);
-  function heroTick() {
-    const r = hero.getBoundingClientRect();
-    const p = clamp(-r.top / (r.height - innerHeight));
-    target = reduce ? FRAMES - 1 : Math.min(FRAMES - 1, Math.round(p * (FRAMES - 1)));
-    draw(target);
+  let heroTop = 0, heroRange = 1;
+  function measure() { heroTop = hero.offsetTop; heroRange = Math.max(1, hero.offsetHeight - innerHeight); }
+  function progress() { return clamp((scrollY - heroTop) / heroRange); }
+
+  let lastP = -1;
+  function layers(p) {
+    if (Math.abs(p - lastP) < 0.0005) return; lastP = p;
     const o1 = p < 0.04 ? 1 : 1 - clamp((p - 0.04) / 0.14);
-    L1.style.opacity = o1; L1.style.transform = `translateY(${(1 - o1) * -30}px)`; L1.style.pointerEvents = o1 > 0.5 ? "auto" : "none";
+    L1.style.opacity = o1; L1.style.transform = `translate3d(0,${(1 - o1) * -30}px,0)`; L1.style.pointerEvents = o1 > 0.5 ? "auto" : "none";
     const o2 = fade(p, 0.3, 0.4, 0.55, 0.65);
-    L2.style.opacity = o2; L2.style.transform = `translateY(${(1 - o2) * 24}px)`;
+    L2.style.opacity = o2; L2.style.transform = `translate3d(0,${(1 - o2) * 24}px,0)`;
     const o3 = fade(p, 0.82, 0.9, 1.01, 1.02);
-    L3.style.opacity = o3; L3.style.transform = `translateY(${(1 - o3) * 24}px)`; L3.style.pointerEvents = o3 > 0.5 ? "auto" : "none";
+    L3.style.opacity = o3; L3.style.transform = `translate3d(0,${(1 - o3) * 24}px,0)`; L3.style.pointerEvents = o3 > 0.5 ? "auto" : "none";
     l3btn.tabIndex = o3 > 0.5 ? 0 : -1;
   }
-  let ticking = false;
-  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { heroTick(); ticking = false; }); } }, { passive: true });
-  addEventListener("resize", heroTick);
-  heroTick();
+  function loop() {
+    const p = progress();
+    goal = reduce ? FRAMES - 1 : p * (FRAMES - 1);
+    shown += (goal - shown) * 0.22;
+    if (Math.abs(goal - shown) < 0.05) shown = goal;
+    paint(Math.round(shown));
+    layers(reduce ? p : shown / (FRAMES - 1));
+    if (shown !== goal || drawn === -2) requestAnimationFrame(loop); else running = false;
+  }
+  function kick() { if (!running) { running = true; requestAnimationFrame(loop); } }
+  addEventListener("scroll", kick, { passive: true });
+  addEventListener("resize", () => { measure(); kick(); });
+  measure(); shown = goal = progress() * (FRAMES - 1); kick();
 
   // Momento: a frase da história acende palavra por palavra enquanto passa pela tela
   const line = document.getElementById("storyLine");
