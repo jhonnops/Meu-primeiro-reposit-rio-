@@ -19,9 +19,8 @@
   Mundo visual: escuro com neon rosa e verde-limão, igual ao Reel.
 
   PARA TROCAR (o que tem data-assumed foi suposto, não confirmado):
-  - WHATSAPP: troque WHATSAPP_NUMERO no script lá embaixo (só números, com 55 + DDD).
-  - Horários e preços marcados com data-assumed.
-  - Endereço: hoje só aparece o bairro "seu bairro" no bloco Visita.
+  - Preços marcados com data-assumed (ainda não confirmados).
+  - WhatsApp e horários: confirmados pelo dono.
 -->
 <style>
   :root {
@@ -281,7 +280,7 @@
           <span class="ln"><span class="neon">de pai pra filho</span></span>
         </h1>
         <p class="lede"><strong>Salão Pai e Filho.</strong> Degradê, navalhado, barba e sobrancelha, com o capricho de quem aprendeu o ofício em casa.</p>
-        <p class="fact"><svg aria-hidden="true"><use href="#i-clock"/></svg><span data-assumed>Terça a sábado, a partir das 9h</span></p>
+        <p class="fact"><svg aria-hidden="true"><use href="#i-clock"/></svg><span>Terça a domingo, a partir das 8h</span></p>
         <div class="actions">
           <a class="btn btn-main" href="#agendar"><svg aria-hidden="true"><use href="#i-wa"/></svg>Agendar pelo WhatsApp</a>
           <a class="btn btn-ghost" href="#servicos">Ver preços</a>
@@ -338,11 +337,14 @@
     <div class="wrap visit-grid">
       <div>
         <h2>Horários <em>e agendamento</em></h2>
-        <ul class="hours" data-assumed>
+        <ul class="hours">
           <li class="off"><span>Segunda</span><span>Fechado</span></li>
-          <li><span>Terça a sexta</span><span>9h – 19h</span></li>
-          <li><span>Sábado</span><span>9h – 18h</span></li>
-          <li class="off"><span>Domingo</span><span>Fechado</span></li>
+          <li><span>Terça</span><span>8h – 17h</span></li>
+          <li><span>Quarta</span><span>8h – 17h30</span></li>
+          <li><span>Quinta</span><span>8h – 16h</span></li>
+          <li><span>Sexta</span><span>8h – 17h30</span></li>
+          <li><span>Sábado</span><span>8h – 17h30</span></li>
+          <li><span>Domingo</span><span>8h – 12h</span></li>
         </ul>
         <p class="where"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>Endereço completo pelo WhatsApp</span></p>
       </div>
@@ -364,7 +366,7 @@
         <div class="row2">
           <div class="field">
             <label for="dia">Dia</label>
-            <select id="dia" name="dia"><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option><option>Sábado</option></select>
+            <select id="dia" name="dia"><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option><option>Sábado</option><option>Domingo (só manhã)</option></select>
           </div>
           <div class="field">
             <label for="periodo">Período</label>
@@ -392,7 +394,7 @@
 
 <script>
   // TROCAR: número do WhatsApp do salão, só números (ex.: 5511999999999). Vazio = o WhatsApp pede pra escolher o contato.
-  const WHATSAPP_NUMERO = "";
+  const WHATSAPP_NUMERO = "558399937897";
 
   const root = document.documentElement;
   root.classList.add("js");
