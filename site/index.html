@@ -7,7 +7,7 @@
 <meta name="description" content="Corte, degradê, navalhado e barba feitos por pai e filho. Agende seu horário pelo WhatsApp.">
 <meta property="og:title" content="Salão Pai e Filho">
 <meta property="og:description" content="Corte e barba de pai pra filho. Agende pelo WhatsApp.">
-<meta property="og:image" content="reel-poster.jpg">
+<meta property="og:image" content="frames/f120.jpg">
 <meta name="theme-color" content="#0b0a09">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0a09'/%3E%3Ctext x='32' y='45' font-family='Arial Black,Arial' font-size='30' text-anchor='middle' fill='%23c8ff2e'%3EPF%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,64 +79,56 @@
   .nav .btn { min-height: 44px; padding: 0 20px; font-size: 15px; }
   @media (max-width: 860px) { .nav ul { display: none; } }
 
-  /* ---------- Hero ---------- */
-  .hero { position: relative; min-height: 100svh; display: grid; align-items: center; padding: 110px 0 60px; overflow: hidden; }
-  .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(60% 50% at 78% 45%, rgba(255,61,127,.16), transparent 70%), radial-gradient(50% 40% at 15% 85%, rgba(200,255,46,.08), transparent 70%); }
-  .hero .wrap { position: relative; display: grid; grid-template-columns: 1.25fr .75fr; gap: 40px; align-items: center; }
-  .hero h1 { font-family: var(--display); font-weight: 400; text-transform: uppercase; line-height: .92; font-size: clamp(64px, 11vw, 150px); letter-spacing: -0.01em; }
+  /* ---------- Hero: vídeo controlado pela rolagem ---------- */
+  .hero { position: relative; height: 420vh; }
+  .hero .sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .media { position: absolute; inset: 0; }
+  .media canvas, .media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .media img { opacity: 1; }
+  .media canvas { opacity: 0; }
+  .media.ready canvas { opacity: 1; }
+  .media::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(11,10,9,.55) 0%, transparent 22%, transparent 48%, rgba(11,10,9,.88) 78%, var(--bg) 100%); }
+  .layer { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: max(40px, env(safe-area-inset-bottom)); will-change: opacity, transform; }
+  .layer .wrap { position: relative; }
+  .hero h1 { font-family: var(--display); font-weight: 400; text-transform: uppercase; line-height: .92; font-size: clamp(56px, 9.5vw, 132px); letter-spacing: -0.01em; }
   .hero h1 .ln { display: block; overflow: hidden; padding-top: .08em; margin-top: -.08em; }
   .hero h1 .ln > span { display: block; }
   .hero h1 .neon { font-family: var(--serif); font-style: italic; text-transform: none; color: var(--pink); font-size: 1.08em; line-height: .95;
     text-shadow: 0 0 10px rgba(255,61,127,.9), 0 0 34px rgba(255,61,127,.55), 0 0 80px rgba(255,61,127,.35); }
-  .hero .lede { margin-top: 28px; max-width: 34ch; font-size: clamp(18px, 2vw, 21px); color: var(--muted); }
+  .hero .lede { margin-top: 20px; max-width: 34ch; font-size: clamp(17px, 2vw, 21px); color: #cfc8bb; }
   .hero .lede strong { color: var(--ink); font-weight: 500; }
-  .hero .fact { margin-top: 22px; display: inline-flex; align-items: center; gap: 10px; font-weight: 500; color: var(--ink); }
+  .hero .fact { margin-top: 16px; display: inline-flex; align-items: center; gap: 10px; font-weight: 500; color: var(--ink); }
   .hero .fact svg { width: 20px; height: 20px; color: var(--lime); }
-  .hero .actions { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 14px; }
+  .hero .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 14px; }
+  .layer h2 { font-size: clamp(52px, 8vw, 110px); }
+  .layer p.say { margin-top: 14px; max-width: 30ch; color: #cfc8bb; font-size: clamp(17px, 2vw, 21px); }
+  .l2, .l3 { opacity: 0; pointer-events: none; }
+  .l3 .wrap { display: grid; justify-items: center; text-align: center; }
+  .l3 p.say { margin-inline: auto; }
+  .scroll-cue { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: 26px; height: 40px; border: 1.5px solid rgba(243,239,230,.5); border-radius: 14px; }
+  .scroll-cue::after { content: ""; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--ink); animation: cue 1.6s var(--ease-out) infinite; }
+  @keyframes cue { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
 
-  /* Poste de barbeiro */
-  .pole-wrap { justify-self: center; position: relative; display: grid; justify-items: center; }
-  .pole { position: relative; width: 120px; height: min(62vh, 520px); }
-  .pole .cap { position: absolute; left: -16px; right: -16px; height: 34px; border-radius: 17px; background: linear-gradient(180deg, #2b2722, #121110);
-    border: 1.5px solid #4a443c; box-shadow: 0 8px 20px rgba(0,0,0,.5); }
-  .pole .cap.t { top: 0; } .pole .cap.b { bottom: 0; }
-  .pole .glass { position: absolute; inset: 26px 0; border-radius: 60px; overflow: hidden; border: 1.5px solid rgba(243,239,230,.55);
-    box-shadow: 0 0 0 6px rgba(255,61,127,.06), 0 20px 60px -10px rgba(255,61,127,.45); }
-  .pole .stripes { position: absolute; left: 0; right: 0; top: -240px; bottom: -240px;
-    background: repeating-linear-gradient(-34deg, var(--pink) 0 34px, var(--ink) 34px 68px, var(--lime) 68px 102px, var(--ink) 102px 136px);
-    animation: pole 3.2s linear infinite; }
-  .pole .glass::after { content: ""; position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(0,0,0,.6), transparent 30%, rgba(255,255,255,.28) 48%, transparent 62%, rgba(0,0,0,.6)); }
-  @keyframes pole { to { transform: translateY(162px); } }
-  .pole-wrap.paused .stripes { animation-play-state: paused; }
-  .pause { margin-top: 18px; min-height: 44px; padding: 0 16px; border-radius: 999px; background: transparent; border: 1px solid var(--line); color: var(--muted);
-    font: 500 13px var(--sans); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: color 200ms ease, border-color 200ms ease, transform 160ms var(--ease-out); }
-  .pause:active { transform: scale(0.97); }
-  .pause svg { width: 14px; height: 14px; }
-  @media (hover: hover) and (pointer: fine) { .pause:hover { color: var(--ink); border-color: #4a443c; } }
-
-  @media (max-width: 860px) {
-    .hero { padding-top: 100px; align-items: start; }
-    .hero .wrap { grid-template-columns: 1fr; }
-    .pole-wrap { position: absolute; right: -10px; top: -30px; opacity: .3; z-index: 0; }
-    .hero .wrap > div:first-child { position: relative; z-index: 1; }
-    .pole { width: 64px; height: 300px; }
-    .pole .cap { left: -10px; right: -10px; height: 22px; } .pole .glass { inset: 16px 0; }
-    .pause { display: none; }
-    .hero .actions .btn { width: 100%; }
+  /* Computador: vídeo vertical numa coluna à direita, texto à esquerda */
+  @media (min-width: 861px) {
+    .media { left: auto; right: max(4vw, calc((100vw - 1180px) / 2)); width: calc(100svh * 9 / 16); width: calc(100vh * 9 / 16);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+    .media::after { background: linear-gradient(180deg, rgba(11,10,9,.5), transparent 20%, transparent 80%, var(--bg)); }
+    .layer { top: 0; display: grid; align-items: center; padding: 72px 0 0; }
+    .layer .wrap > div { max-width: 600px; }
+    .l3 .wrap { justify-items: start; text-align: left; }
+    .l3 p.say { margin-inline: 0; }
   }
+  @media (max-width: 860px) { .hero .actions .btn { width: 100%; } .layer.l1 { padding-bottom: 76px; } }
 
-  /* Entrada do hero (uma vez) */
+  /* Entrada do título (uma vez) */
   .js .hero h1 .ln > span { transform: translateY(105%); }
-  .js .hero .lede, .js .hero .fact, .js .hero .actions { opacity: 0; transform: translateY(14px); }
-  .js .pole-wrap .pole { opacity: 0; transform: translateY(30px); }
+  .js .l1 .lede, .js .l1 .fact, .js .l1 .actions { opacity: 0; transform: translateY(14px); }
   .js.in .hero h1 .ln > span { transform: none; transition: transform 900ms var(--ease-out); }
   .js.in .hero h1 .ln:nth-child(2) > span { transition-delay: 90ms; }
-  .js.in .hero h1 .ln:nth-child(3) > span { transition-delay: 180ms; }
-  .js.in .hero .lede, .js.in .hero .fact, .js.in .hero .actions { opacity: 1; transform: none; transition: opacity 600ms ease, transform 700ms var(--ease-out); }
-  .js.in .hero .lede { transition-delay: 380ms; } .js.in .hero .fact { transition-delay: 460ms; } .js.in .hero .actions { transition-delay: 540ms; }
-  .js.in .pole-wrap .pole { opacity: 1; transform: none; transition: opacity 700ms ease 200ms, transform 1000ms var(--ease-out) 200ms; }
+  .js.in .l1 .lede, .js.in .l1 .fact, .js.in .l1 .actions { opacity: 1; transform: none; transition: opacity 600ms ease, transform 700ms var(--ease-out); }
+  .js.in .l1 .lede { transition-delay: 380ms; } .js.in .l1 .fact { transition-delay: 460ms; } .js.in .l1 .actions { transition-delay: 540ms; }
   .js.in .hero h1 .neon { animation: flicker 1.1s steps(1) 700ms 1 both; }
   @keyframes flicker { 0% { opacity: .2; text-shadow: none; } 12% { opacity: 1; } 18% { opacity: .35; text-shadow: none; } 26% { opacity: 1; } 34% { opacity: .5; } 40%, 100% { opacity: 1; } }
 
@@ -231,9 +223,11 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; }
-    .js .hero h1 .ln > span, .js .hero .lede, .js .hero .fact, .js .hero .actions, .js .pole-wrap .pole { transform: none !important; opacity: 1 !important; transition: opacity 300ms ease !important; }
+    .js .hero h1 .ln > span, .js .hero .lede, .js .hero .fact, .js .hero .actions { transform: none !important; opacity: 1 !important; transition: opacity 300ms ease !important; }
     .story .big .w { color: var(--ink); }
     .mbar { transition: none; }
+    .hero { height: 100vh; height: 100svh; }
+    .l2, .l3, .scroll-cue { display: none; }
   }
 </style>
 </head>
@@ -273,22 +267,43 @@
 
 <main id="conteudo">
   <section class="hero" id="topo">
-    <div class="wrap">
-      <div>
-        <h1>
-          <span class="ln"><span>Corte e barba</span></span>
-          <span class="ln"><span class="neon">de pai pra filho</span></span>
-        </h1>
-        <p class="lede"><strong>Salão Pai e Filho.</strong> Degradê, navalhado, barba e sobrancelha, com o capricho de quem aprendeu o ofício em casa.</p>
-        <p class="fact"><svg aria-hidden="true"><use href="#i-clock"/></svg><span>Terça a domingo, a partir das 8h</span></p>
-        <div class="actions">
-          <a class="btn btn-main" href="#agendar"><svg aria-hidden="true"><use href="#i-wa"/></svg>Agendar pelo WhatsApp</a>
-          <a class="btn btn-ghost" href="#servicos">Ver preços</a>
-        </div>
+    <div class="sticky">
+      <div class="media" id="media">
+        <img id="still" src="frames/f001.jpg" alt="Cadeira de barbeiro antiga num salão escuro; tesoura e navalha sobem no ar e viram o letreiro neon Pai e Filho" width="720" height="1280" fetchpriority="high">
+        <canvas id="seq" width="720" height="1280" aria-hidden="true"></canvas>
       </div>
-      <div class="pole-wrap" id="poleWrap">
-        <div class="pole" aria-hidden="true"><div class="cap t"></div><div class="glass"><div class="stripes"></div></div><div class="cap b"></div></div>
-        <button class="pause" id="pauseBtn" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>Pausar animação</span></button>
+
+      <div class="layer l1" id="l1">
+        <div class="wrap"><div>
+          <h1>
+            <span class="ln"><span>Corte e barba</span></span>
+            <span class="ln"><span class="neon">de pai pra filho</span></span>
+          </h1>
+          <p class="lede"><strong>Salão Pai e Filho.</strong> Degradê, navalhado, barba e sobrancelha, com o capricho de quem aprendeu o ofício em casa.</p>
+          <p class="fact"><svg aria-hidden="true"><use href="#i-clock"/></svg><span>Terça a domingo, a partir das 8h</span></p>
+          <div class="actions">
+            <a class="btn btn-main" href="#agendar"><svg aria-hidden="true"><use href="#i-wa"/></svg>Agendar pelo WhatsApp</a>
+            <a class="btn btn-ghost" href="#servicos">Ver preços</a>
+          </div>
+        </div></div>
+        <span class="scroll-cue" aria-hidden="true"></span>
+      </div>
+
+      <div class="layer l2" id="l2">
+        <div class="wrap"><div>
+          <h2>Tesoura, navalha <em>e mão firme</em></h2>
+          <p class="say">As mesmas ferramentas há duas gerações. Cada corte sai no capricho.</p>
+        </div></div>
+      </div>
+
+      <div class="layer l3" id="l3">
+        <div class="wrap"><div>
+          <h2>Sua cadeira <em>está esperando</em></h2>
+          <p class="say">Marque pelo WhatsApp e chegue na hora certa.</p>
+          <div class="actions" style="margin-top:26px;display:flex;gap:14px;flex-wrap:wrap;justify-content:inherit">
+            <a class="btn btn-main" href="#agendar" tabindex="-1" id="l3btn"><svg aria-hidden="true"><use href="#i-wa"/></svg>Agendar horário</a>
+          </div>
+        </div></div>
       </div>
     </div>
   </section>
@@ -405,18 +420,63 @@
   function onScroll() {
     nav.classList.toggle("solid", scrollY > 24);
     const r = agendar.getBoundingClientRect();
-    mbar.classList.toggle("show", scrollY > innerHeight * 0.7 && !(r.top < innerHeight && r.bottom > 0));
+    const h = document.getElementById("topo").getBoundingClientRect();
+    mbar.classList.toggle("show", h.bottom < innerHeight * 0.6 && !(r.top < innerHeight && r.bottom > 0));
   }
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
-  // Pausar o poste
-  const poleWrap = document.getElementById("poleWrap"), pauseBtn = document.getElementById("pauseBtn");
-  pauseBtn.addEventListener("click", () => {
-    const p = poleWrap.classList.toggle("paused");
-    pauseBtn.setAttribute("aria-pressed", p);
-    pauseBtn.querySelector("span").textContent = p ? "Retomar animação" : "Pausar animação";
-    pauseBtn.querySelector("use").setAttribute("href", p ? "#i-play" : "#i-pause");
-  });
+  // Hero: a rolagem controla os quadros do vídeo
+  const FRAMES = 120, hero = document.getElementById("topo"), media = document.getElementById("media");
+  const canvas = document.getElementById("seq"), ctx = canvas.getContext("2d");
+  const L1 = document.getElementById("l1"), L2 = document.getElementById("l2"), L3 = document.getElementById("l3"), l3btn = document.getElementById("l3btn");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const imgs = new Array(FRAMES);
+  let current = -1;
+  const src = (i) => "frames/f" + String(i + 1).padStart(3, "0") + ".jpg";
+  function load(i) {
+    if (imgs[i]) return imgs[i];
+    const im = new Image(); im.decoding = "async"; im.src = src(i);
+    im.onload = () => { if (Math.abs(i - target) < 3) draw(target); };
+    return (imgs[i] = im);
+  }
+  function nearestLoaded(i) {
+    for (let d = 0; d < FRAMES; d++) {
+      for (const j of [i - d, i + d]) if (j >= 0 && j < FRAMES && imgs[j] && imgs[j].complete && imgs[j].naturalWidth) return j;
+    }
+    return -1;
+  }
+  let target = 0;
+  function draw(i) {
+    const j = nearestLoaded(i);
+    if (j < 0 || j === current) return;
+    ctx.drawImage(imgs[j], 0, 0, 720, 1280);
+    current = j;
+    media.classList.add("ready");
+  }
+  // carrega em ordem espaçada: primeiro 1 a cada 8, depois o resto
+  const order = [];
+  for (const step of [8, 4, 2, 1]) for (let i = 0; i < FRAMES; i += step) if (!order.includes(i)) order.push(i);
+  if (reduce) { load(FRAMES - 1); } else { let k = 0; (function next() { const n = Math.min(order.length, k + 6); for (; k < n; k++) load(order[k]); if (k < order.length) setTimeout(next, 60); })(); }
+
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const fade = (p, a, b, c, d) => p < a || p > d ? 0 : p < b ? (p - a) / (b - a) : p <= c ? 1 : 1 - (p - c) / (d - c);
+  function heroTick() {
+    const r = hero.getBoundingClientRect();
+    const p = clamp(-r.top / (r.height - innerHeight));
+    target = reduce ? FRAMES - 1 : Math.min(FRAMES - 1, Math.round(p * (FRAMES - 1)));
+    draw(target);
+    const o1 = p < 0.04 ? 1 : 1 - clamp((p - 0.04) / 0.14);
+    L1.style.opacity = o1; L1.style.transform = `translateY(${(1 - o1) * -30}px)`; L1.style.pointerEvents = o1 > 0.5 ? "auto" : "none";
+    const o2 = fade(p, 0.3, 0.4, 0.55, 0.65);
+    L2.style.opacity = o2; L2.style.transform = `translateY(${(1 - o2) * 24}px)`;
+    const o3 = fade(p, 0.82, 0.9, 1.01, 1.02);
+    L3.style.opacity = o3; L3.style.transform = `translateY(${(1 - o3) * 24}px)`; L3.style.pointerEvents = o3 > 0.5 ? "auto" : "none";
+    l3btn.tabIndex = o3 > 0.5 ? 0 : -1;
+  }
+  let ticking = false;
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { heroTick(); ticking = false; }); } }, { passive: true });
+  addEventListener("resize", heroTick);
+  heroTick();
 
   // Momento: a frase da história acende palavra por palavra enquanto passa pela tela
   const line = document.getElementById("storyLine");
