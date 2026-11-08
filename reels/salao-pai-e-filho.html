@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salão Pai e Filho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060509;
+    --ink: #f4f1ea;
+    --pink: #ff2d78;
+    --lime: #c8ff2e;
+    --violet: #8b5cff;
+    --cyan: #3ef0ff;
+    --gold: #ffb547;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); overflow: hidden; }
+  body { display: grid; place-items: center; color: var(--ink); font-family: "JetBrains Mono", monospace; }
+
+  #fit { position: relative; width: 1080px; height: 1920px; transform-origin: center center; flex: none; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .mono { font-family: "JetBrains Mono", monospace; letter-spacing: .18em; text-transform: uppercase; }
+  .anton { font-family: "Anton", sans-serif; text-transform: uppercase; line-height: .9; }
+  .serif { font-family: "Instrument Serif", serif; font-style: italic; }
+
+  /* HUD fixo */
+  #hud { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+  .corner { position: absolute; width: 46px; height: 46px; border: 3px solid rgba(244,241,234,.55); }
+  .c-tl { top: 70px; left: 60px; border-right: 0; border-bottom: 0; }
+  .c-tr { top: 70px; right: 60px; border-left: 0; border-bottom: 0; }
+  .c-bl { bottom: 70px; left: 60px; border-right: 0; border-top: 0; }
+  .c-br { bottom: 70px; right: 60px; border-left: 0; border-top: 0; }
+  .hud-t { position: absolute; top: 84px; font-size: 22px; color: rgba(244,241,234,.7); }
+  .hud-l { left: 130px; } .hud-r { right: 130px; text-align: right; }
+  .hud-b { position: absolute; bottom: 84px; left: 130px; right: 130px; display: flex; align-items: center; gap: 24px; font-size: 22px; color: rgba(244,241,234,.7); }
+  .bar { flex: 1; height: 4px; background: rgba(244,241,234,.15); border-radius: 2px; overflow: hidden; }
+  #barFill { height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: var(--ink); box-shadow: 0 0 12px currentColor; }
+  #rec { width: 14px; height: 14px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 12px var(--pink); }
+  #grain { position: absolute; inset: -50%; z-index: 19; pointer-events: none; opacity: .07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  #flash { position: absolute; inset: 0; z-index: 18; background: #fff; opacity: 0; pointer-events: none; mix-blend-mode: overlay; }
+
+  /* Cena 1 — cilindro 3D */
+  #s1 { perspective: 1500px; }
+  #s1 .glow { position: absolute; left: 50%; top: 50%; width: 1100px; height: 1100px; margin: -550px 0 0 -550px;
+    background: radial-gradient(circle, rgba(200,255,46,.22), transparent 60%); filter: blur(30px); }
+  #cyl { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+  .ring { position: absolute; left: 0; transform-style: preserve-3d; }
+  .ring span { position: absolute; left: -40px; width: 80px; text-align: center; font-family: "Anton", sans-serif; font-size: 150px; line-height: 1; top: -75px; text-transform: uppercase; }
+  .ring.out span { color: transparent; -webkit-text-stroke: 2.5px rgba(244,241,234,.9); }
+  .ring.neon span { font-family: "Instrument Serif", serif; font-style: italic; text-transform: none; font-size: 170px; color: var(--lime);
+    text-shadow: 0 0 10px var(--lime), 0 0 30px var(--lime), 0 0 70px rgba(200,255,46,.6); top: -95px; }
+  .ring.solid span { color: var(--ink); text-shadow: 0 0 18px rgba(255,255,255,.4); }
+  #s1 .cap { position: absolute; left: 0; right: 0; bottom: 330px; text-align: center; font-size: 30px; color: rgba(244,241,234,.75); }
+
+  /* Cena 2 — Tradição (rosa) */
+  #s2 .bgc { position: absolute; inset: 0; background: radial-gradient(120% 70% at 50% 35%, rgba(255,45,120,.38), rgba(255,45,120,.08) 50%, transparent 75%); }
+  .tag { display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px; border-radius: 40px; font-size: 24px; border: 2px solid currentColor; }
+  .tag i { width: 12px; height: 12px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+  #s2 .tag { position: absolute; top: 300px; left: 110px; color: var(--pink); }
+  #s2 h2 { position: absolute; top: 400px; left: 100px; font-size: 250px; color: var(--ink); }
+  #s2 h2 .ln { display: block; overflow: hidden; padding-top: 40px; margin-top: -40px; }
+  #s2 h2 .ln b { display: block; font-weight: 400; }
+  #s2 .sub { position: absolute; top: 650px; left: 110px; font-size: 120px; color: var(--pink); text-shadow: 0 0 14px var(--pink), 0 0 40px var(--pink); }
+  #scissors { position: absolute; left: 50%; top: 1000px; width: 640px; margin-left: -320px; overflow: visible; }
+  #scissors * { fill: none; stroke: var(--pink); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 8px var(--pink)) drop-shadow(0 0 22px var(--pink)); }
+  #s2 .foot { position: absolute; bottom: 230px; left: 110px; right: 110px; display: flex; justify-content: space-between; font-size: 24px; color: rgba(244,241,234,.6); }
+
+  /* Cena 3 — Corte & barba (lima) */
+  #s3 .bgc { position: absolute; inset: 0; background: linear-gradient(180deg, #0b1004, #060509 70%); }
+  #s3 .bgc::after { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 55% at 70% 40%, rgba(200,255,46,.28), transparent 70%); }
+  #s3 .tag { position: absolute; top: 300px; left: 110px; color: var(--lime); }
+  #s3 h2 { position: absolute; top: 400px; left: 100px; font-size: 270px; color: var(--lime); text-shadow: 0 0 20px rgba(200,255,46,.6), 0 0 60px rgba(200,255,46,.35); }
+  #s3 .sub { position: absolute; top: 640px; left: 110px; font-size: 130px; color: var(--ink); }
+  #pole { position: absolute; right: 140px; top: 860px; width: 150px; height: 560px; }
+  #pole .cap1, #pole .cap2 { position: absolute; left: -15px; width: 180px; height: 40px; border-radius: 20px; background: #1a1d14; border: 3px solid var(--lime); box-shadow: 0 0 18px rgba(200,255,46,.6); }
+  #pole .cap1 { top: -20px; } #pole .cap2 { bottom: -20px; }
+  #pole .glass { position: absolute; inset: 20px 0; border-radius: 75px; overflow: hidden; border: 3px solid rgba(244,241,234,.7);
+    box-shadow: 0 0 30px rgba(255,45,120,.5), inset 0 0 30px rgba(0,0,0,.6); }
+  #stripes { position: absolute; left: 0; right: 0; top: -300px; height: 1200px;
+    background: repeating-linear-gradient(-35deg, var(--pink) 0 40px, var(--ink) 40px 80px, var(--lime) 80px 120px, var(--ink) 120px 160px); }
+  #pole .glass::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55), transparent 35%, rgba(255,255,255,.25) 50%, transparent 65%, rgba(0,0,0,.55)); }
+  #services { position: absolute; left: 110px; top: 900px; display: flex; flex-direction: column; gap: 34px; }
+  .svc { display: flex; align-items: baseline; gap: 26px; font-size: 64px; }
+  .svc .n { font-family: "JetBrains Mono", monospace; font-size: 26px; color: var(--lime); }
+  .svc .t { font-family: "Anton", sans-serif; text-transform: uppercase; color: var(--ink); }
+  #s3 .swatches { position: absolute; left: 110px; bottom: 260px; display: flex; gap: 20px; }
+  #s3 .swatches div { width: 110px; height: 150px; border-radius: 14px; }
+
+  /* Cena 4 — Estilo (violeta) */
+  #s4 .bgc { position: absolute; inset: 0; background: radial-gradient(100% 60% at 50% 62%, rgba(139,92,255,.35), rgba(62,240,255,.06) 55%, transparent 80%); }
+  #s4 .tag { position: absolute; top: 300px; left: 110px; color: var(--cyan); }
+  #s4 h2 { position: absolute; top: 400px; left: 100px; font-size: 270px; color: var(--ink); }
+  #s4 h2 .q { color: transparent; -webkit-text-stroke: 4px var(--violet); filter: drop-shadow(0 0 14px var(--violet)); }
+  #s4 .sub { position: absolute; top: 640px; left: 110px; font-size: 120px; background: linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #sphere { position: absolute; left: 0; top: 760px; width: 1080px; height: 1000px; }
+  #s4 .input { position: absolute; left: 110px; right: 110px; bottom: 240px; height: 90px; border-radius: 45px; border: 2px solid rgba(139,92,255,.7);
+    display: flex; align-items: center; padding: 0 16px 0 40px; font-size: 28px; color: rgba(244,241,234,.85); background: rgba(10,8,20,.6); box-shadow: 0 0 30px rgba(139,92,255,.35); }
+  #s4 .input .cursor { display: inline-block; width: 3px; height: 34px; background: var(--cyan); margin-left: 4px; vertical-align: middle; }
+  #s4 .input .go { margin-left: auto; width: 60px; height: 60px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 20px var(--lime); }
+
+  /* Cena 5 — Marca */
+  #stars { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  #s5 .bgc { position: absolute; inset: 0; background: radial-gradient(80% 45% at 50% 48%, rgba(139,92,255,.25), transparent 70%); }
+  #s5 .wrap { position: absolute; left: 0; right: 0; top: 690px; text-align: center; }
+  #s5 .k { font-size: 26px; color: rgba(244,241,234,.7); }
+  #s5 h1 { font-size: 220px; margin-top: 30px; color: var(--ink); text-shadow: 0 0 20px rgba(255,255,255,.35); }
+  #s5 h1 .l { display: block; }
+  #s5 h1 .l span { display: inline-block; }
+  #s5 h1 .pf { color: var(--lime); text-shadow: 0 0 14px var(--lime), 0 0 50px rgba(200,255,46,.6); }
+  #s5 .line { width: 760px; height: 5px; margin: 34px auto 0; background: linear-gradient(90deg, transparent, var(--lime), transparent); box-shadow: 0 0 18px var(--lime); transform: scaleX(0); }
+  #s5 .sub { margin-top: 30px; font-size: 76px; color: var(--ink); }
+  #s5 .sub em { color: var(--pink); text-shadow: 0 0 16px var(--pink); }
+  #s5 .menu { margin-top: 70px; display: flex; justify-content: center; gap: 36px; font-size: 24px; color: rgba(244,241,234,.7); }
+  #s5 .cta { display: inline-flex; align-items: center; gap: 16px; margin-top: 70px; padding: 30px 56px; border-radius: 60px; font-size: 30px; font-weight: 700; color: #060509;
+    background: linear-gradient(90deg, var(--pink), var(--violet)); box-shadow: 0 0 40px rgba(255,45,120,.6); }
+  #s5 .cta i { width: 14px; height: 14px; border-radius: 50%; background: #060509; }
+
+  #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font: 12px "JetBrains Mono", monospace; color: rgba(244,241,234,.45); z-index: 50; }
+  body.render #hint { display: none; }
+</style>
+</head>
+<body>
+<div id="fit">
+<div id="stage">
+
+  <!-- CENA 1 -->
+  <section class="scene" id="s1">
+    <div class="glow"></div>
+    <div id="cyl"></div>
+    <div class="cap mono">Corte · Barba · Família</div>
+  </section>
+
+  <!-- CENA 2 -->
+  <section class="scene" id="s2">
+    <div class="bgc"></div>
+    <div class="tag mono"><i></i>01 · Raiz</div>
+    <h2 class="anton"><span class="ln"><b>Tradição</b></span></h2>
+    <div class="sub serif">de pai pra filho</div>
+    <svg id="scissors" viewBox="0 0 640 640">
+      <circle cx="210" cy="500" r="80" pathLength="1"/>
+      <circle cx="430" cy="500" r="80" pathLength="1"/>
+      <path d="M260 440 L470 70" pathLength="1"/>
+      <path d="M380 440 L170 70" pathLength="1"/>
+      <circle cx="320" cy="300" r="12" pathLength="1"/>
+    </svg>
+    <div class="foot mono"><span>Mesma cadeira</span><span>Novas gerações</span></div>
+  </section>
+
+  <!-- CENA 3 -->
+  <section class="scene" id="s3">
+    <div class="bgc"></div>
+    <div class="tag mono"><i></i>02 · Serviços</div>
+    <h2 class="anton">Corte</h2>
+    <div class="sub serif">&amp; barba</div>
+    <div id="services">
+      <div class="svc"><span class="n">/01</span><span class="t">Degradê</span></div>
+      <div class="svc"><span class="n">/02</span><span class="t">Navalhado</span></div>
+      <div class="svc"><span class="n">/03</span><span class="t">Barba</span></div>
+      <div class="svc"><span class="n">/04</span><span class="t">Sobrancelha</span></div>
+    </div>
+    <div id="pole"><div class="cap1"></div><div class="glass"><div id="stripes"></div></div><div class="cap2"></div></div>
+    <div class="swatches">
+      <div style="background:#060509;border:2px solid rgba(244,241,234,.4)"></div>
+      <div style="background:var(--ink)"></div>
+      <div style="background:var(--lime);box-shadow:0 0 20px var(--lime)"></div>
+      <div style="background:var(--pink);box-shadow:0 0 20px var(--pink)"></div>
+      <div style="background:var(--violet);box-shadow:0 0 20px var(--violet)"></div>
+    </div>
+  </section>
+
+  <!-- CENA 4 -->
+  <section class="scene" id="s4">
+    <div class="bgc"></div>
+    <div class="tag mono"><i></i>03 · Detalhe</div>
+    <h2 class="anton">Estilo<span class="q">?</span></h2>
+    <div class="sub serif">no detalhe</div>
+    <canvas id="sphere" width="1080" height="1000"></canvas>
+    <div class="input mono"><span id="typed"></span><span class="cursor"></span><span class="go"></span></div>
+  </section>
+
+  <!-- CENA 5 -->
+  <section class="scene" id="s5">
+    <canvas id="stars" width="1080" height="1920"></canvas>
+    <div class="bgc"></div>
+    <div class="wrap">
+      <div class="k mono">— Desde sempre em família —</div>
+      <h1 class="anton">
+        <span class="l" id="l1"></span>
+        <span class="l pf" id="l2"></span>
+      </h1>
+      <div class="line"></div>
+      <div class="sub serif">estilo que passa <em>adiante</em></div>
+      <div class="menu mono"><span>Corte</span><span>Barba</span><span>Sobrancelha</span></div>
+      <div class="cta mono"><i></i>Agende seu horário</div>
+    </div>
+  </section>
+
+  <div id="flash"></div>
+  <div id="grain"></div>
+  <div id="hud">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="hud-t hud-l mono">Salão Pai e Filho</div>
+    <div class="hud-t hud-r mono" id="sceneNo">01 / 05</div>
+    <div class="hud-b mono"><span id="rec"></span><span id="tc">00:00</span><div class="bar"><div id="barFill"></div></div><span>Reel</span></div>
+  </div>
+</div>
+</div>
+<div id="hint">toque para reiniciar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  const RENDER = /render=1/.test(location.search);
+  if (RENDER) document.body.classList.add("render");
+  const DUR = 15.5;
+  const $ = (s) => document.querySelector(s);
+
+  /* ---------- Ajuste à tela ---------- */
+  const fit = $("#fit");
+  function resize() {
+    if (RENDER) return;
+    const s = Math.min(innerWidth / 1080, innerHeight / 1920);
+    fit.style.transform = "scale(" + s + ")";
+  }
+  addEventListener("resize", resize); resize();
+
+  /* ---------- Cilindro de texto ---------- */
+  const rings = [
+    { cls: "out",   text: "CORTE • BARBA • ESTILO • ", y: -330, r: 430 },
+    { cls: "neon",  text: "pai e filho — ",            y: -120, r: 470 },
+    { cls: "solid", text: "TRADIÇÃO • FAMÍLIA • ",      y: 100,  r: 430 },
+    { cls: "out",   text: "SALÃO • DESDE SEMPRE • ",    y: 310,  r: 410 }
+  ];
+  const cyl = $("#cyl");
+  const ringEls = rings.map((cfg) => {
+    const el = document.createElement("div");
+    el.className = "ring " + cfg.cls;
+    el.style.top = cfg.y + "px";
+    const charW = cfg.cls === "neon" ? 62 : 74;
+    const n = Math.round((2 * Math.PI * cfg.r) / charW);
+    const reps = Math.max(1, Math.round(n / cfg.text.length));
+    const str = cfg.text.repeat(reps), m = str.length;
+    el._chars = [];
+    [...str].forEach((ch, i) => {
+      const s = document.createElement("span");
+      s.textContent = ch === " " ? " " : ch;
+      s.style.transform = "rotateY(" + (i * 360 / m) + "deg) translateZ(" + cfg.r + "px)";
+      el._chars.push([s, i * 360 / m]);
+      el.appendChild(s);
+    });
+    cyl.appendChild(el);
+    return el;
+  });
+
+  /* ---------- Título final letra a letra ---------- */
+  function split(el, text) {
+    el.innerHTML = [...text].map(c => "<span>" + (c === " " ? "&nbsp;" : c) + "</span>").join("");
+    return el.querySelectorAll("span");
+  }
+  const l1 = split($("#l1"), "Salão");
+  const l2 = split($("#l2"), "Pai e Filho");
+
+  /* ---------- Canvas: esfera e estrelas (função do tempo) ---------- */
+  const sph = $("#sphere").getContext("2d");
+  const PTS = [];
+  const N = 520;
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), th = i * 2.399963;
+    PTS.push([Math.cos(th) * r, y, Math.sin(th) * r]);
+  }
+  function drawSphere(t, k) {
+    const c = sph, W = 1080, H = 1000;
+    c.clearRect(0, 0, W, H);
+    if (k <= 0) return;
+    const R = 340 * (0.6 + 0.4 * k), a = t * 0.9, b = 0.35 + Math.sin(t * 0.7) * 0.15;
+    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+    const proj = PTS.map(([x, y, z]) => {
+      const wob = 1 + 0.06 * Math.sin(y * 6 + t * 3);
+      let X = (x * ca - z * sa) * wob, Z = (x * sa + z * ca) * wob, Y = y * wob;
+      const Y2 = Y * cb - Z * sb, Z2 = Y * sb + Z * cb;
+      return [W / 2 + X * R, H / 2 + Y2 * R, Z2];
+    });
+    c.lineWidth = 1;
+    for (let i = 0; i < N; i += 2) {
+      const p = proj[i], q = proj[(i + 13) % N];
+      const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+      if (d < 120) {
+        c.strokeStyle = "rgba(139,92,255," + (0.25 * k * (p[2] + 1.2) / 2.2) + ")";
+        c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke();
+      }
+    }
+    c.globalCompositeOperation = "lighter";
+    for (const [x, y, z] of proj) {
+      const depth = (z + 1) / 2;
+      c.fillStyle = depth > 0.55 ? "rgba(62,240,255," + (0.35 + depth * 0.65) * k + ")" : "rgba(139,92,255," + (0.25 + depth) * k + ")";
+      const s = 1.5 + depth * 3.5;
+      c.beginPath(); c.arc(x, y, s, 0, 6.283); c.fill();
+    }
+    c.globalCompositeOperation = "source-over";
+  }
+
+  const st = $("#stars").getContext("2d");
+  const STARS = [];
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 260; i++) STARS.push([rnd() * 1080, rnd() * 1920, rnd() * 2.6 + 0.5, rnd() * 6.28, rnd() * 0.8 + 0.2]);
+  function drawStars(t) {
+    st.clearRect(0, 0, 1080, 1920);
+    for (const [x, y, r, ph, sp] of STARS) {
+      const a = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(t * 3 * sp + ph));
+      const yy = (y - t * 30 * sp + 1920) % 1920;
+      st.fillStyle = "rgba(244,241,234," + a + ")";
+      st.beginPath(); st.arc(x, yy, r, 0, 6.283); st.fill();
+    }
+  }
+
+  /* ---------- Linha do tempo ---------- */
+  const sphereK = { v: 0 };
+  const typed = $("#typed");
+  const typeMsg = "Quero um corte novo…";
+  const typer = { n: 0 };
+
+  const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+
+  // Rotação contínua dos anéis + progresso
+  tl.to("#barFill", { scaleX: 1, duration: DUR, ease: "none" }, 0);
+  ringEls.forEach((el, i) => {
+    tl.fromTo(el, { rotateY: i % 2 ? 40 : -20 }, { rotateY: (i % 2 ? -1 : 1) * 160 + (i % 2 ? 40 : -20), duration: 4, ease: "none" }, 0);
+  });
+
+  // CENA 1 (0 – 3.4)
+  tl.set("#s1", { opacity: 1 }, 0)
+    .fromTo("#cyl", { rotateX: 28, rotateZ: -14, scale: 0.4, z: -600 }, { rotateX: 12, rotateZ: -8, scale: 1, z: 0, duration: 1.6, ease: "expo.out" }, 0)
+    .fromTo(".ring", { opacity: 0 }, { opacity: 1, duration: 0.6, stagger: 0.12 }, 0.05)
+    .fromTo("#s1 .cap", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8 }, 0.8)
+    .to("#cyl", { rotateX: 0, rotateZ: 0, scale: 1.25, duration: 1.6, ease: "power2.inOut" }, 1.7)
+    .to("#s1", { opacity: 0, scale: 1.3, filter: "blur(20px)", duration: 0.45, ease: "power2.in" }, 2.95);
+
+  // CENA 2 (3.2 – 6.6)
+  tl.set("#sceneNo", { textContent: "02 / 05" }, 3.2)
+    .fromTo("#flash", { opacity: 0.9 }, { opacity: 0, duration: 0.5 }, 3.2)
+    .fromTo("#s2", { opacity: 1, clipPath: "inset(50% 0 50% 0)" }, { clipPath: "inset(0% 0 0% 0)", duration: 0.6, ease: "expo.out" }, 3.2)
+    .fromTo("#s2 .tag", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5 }, 3.45)
+    .fromTo("#s2 h2 b", { yPercent: 110 }, { yPercent: 0, duration: 0.8, ease: "expo.out" }, 3.4)
+    .fromTo("#s2 .sub", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.8 }, 3.7)
+    .fromTo("#scissors > *", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, stagger: 0.12, ease: "power2.inOut" }, 3.8)
+    .fromTo("#scissors", { rotate: -20, scale: 0.8, transformOrigin: "50% 47%" }, { rotate: 0, scale: 1, duration: 1.4 }, 3.8)
+    .to("#scissors path:nth-of-type(1)", { rotate: 8, svgOrigin: "320 300", duration: 0.18, yoyo: true, repeat: 5, ease: "sine.inOut" }, 5.1)
+    .to("#scissors path:nth-of-type(2)", { rotate: -8, svgOrigin: "320 300", duration: 0.18, yoyo: true, repeat: 5, ease: "sine.inOut" }, 5.1)
+    .fromTo("#s2 .foot", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 4.4)
+    .to("#s2", { xPercent: -100, duration: 0.5, ease: "power3.in" }, 6.2);
+
+  // CENA 3 (6.4 – 9.8)
+  tl.set("#sceneNo", { textContent: "03 / 05" }, 6.4)
+    .fromTo("#s3", { opacity: 1, xPercent: 100 }, { xPercent: 0, duration: 0.55, ease: "power3.out" }, 6.25)
+    .fromTo("#s3 .tag", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5 }, 6.6)
+    .fromTo("#s3 h2", { opacity: 0, scale: 1.4, filter: "blur(16px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.7, transformOrigin: "0% 50%" }, 6.55)
+    .fromTo("#s3 .sub", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6 }, 6.85)
+    .fromTo(".svc", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.14 }, 7.0)
+    .fromTo("#pole", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.8 }, 6.9)
+    .fromTo("#stripes", { y: 0 }, { y: 320 * 1.5, duration: 3, ease: "none" }, 6.6)
+    .fromTo("#s3 .swatches div", { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.5, stagger: 0.08, ease: "back.out(2)" }, 7.6)
+    .to("#s3", { opacity: 0, scale: 0.85, duration: 0.45, ease: "power2.in" }, 9.4);
+
+  // CENA 4 (9.7 – 12.8)
+  tl.set("#sceneNo", { textContent: "04 / 05" }, 9.7)
+    .fromTo("#s4", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 9.7)
+    .fromTo("#s4 .tag", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 9.8)
+    .fromTo("#s4 h2", { opacity: 0, letterSpacing: "0.3em" }, { opacity: 1, letterSpacing: "0em", duration: 0.9, ease: "expo.out" }, 9.8)
+    .fromTo("#s4 .sub", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, 10.1)
+    .fromTo(sphereK, { v: 0 }, { v: 1, duration: 1.0, ease: "power2.out" }, 9.9)
+    .fromTo("#s4 .input", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6 }, 10.4)
+    .fromTo(typer, { n: 0 }, { n: typeMsg.length, duration: 1.3, ease: "none", onUpdate: () => {}, }, 10.8)
+    .to("#s4", { opacity: 0, filter: "blur(14px)", duration: 0.5, ease: "power2.in" }, 12.4);
+
+  // CENA 5 (12.8 – 15.5)
+  tl.set("#sceneNo", { textContent: "05 / 05" }, 12.8)
+    .fromTo("#flash", { opacity: 0.7 }, { opacity: 0, duration: 0.6 }, 12.8)
+    .fromTo("#s5", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 12.8)
+    .fromTo("#s5 .k", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 12.9)
+    .fromTo(l1, { opacity: 0, yPercent: 60, rotateX: -90 }, { opacity: 1, yPercent: 0, rotateX: 0, duration: 0.6, stagger: 0.05 }, 12.95)
+    .fromTo(l2, { opacity: 0, yPercent: 60, rotateX: -90 }, { opacity: 1, yPercent: 0, rotateX: 0, duration: 0.6, stagger: 0.04 }, 13.2)
+    .to("#s5 .line", { scaleX: 1, duration: 0.8, ease: "expo.out" }, 13.6)
+    .fromTo("#s5 .sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, 13.8)
+    .fromTo("#s5 .menu span", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.1 }, 14.0)
+    .fromTo("#s5 .cta", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(2)" }, 14.2)
+    .to("#s5 .cta", { boxShadow: "0 0 80px rgba(255,45,120,.95)", duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 14.8)
+    .set({}, {}, DUR);
+
+  /* ---------- Desenho dependente do tempo ---------- */
+  function paint(t) {
+    if (t < 3.5) ringEls.forEach((el) => {
+      const rot = gsap.getProperty(el, "rotationY");
+      el._chars.forEach(([s, a]) => {
+        const c = Math.cos((a + rot) * Math.PI / 180);
+        s.style.opacity = c > 0 ? 0.35 + 0.65 * c : 0.12 + 0.1 * (1 + c);
+      });
+    });
+    if (t >= 9.6 && t <= 12.95) drawSphere(t, sphereK.v);
+    if (t >= 12.7) drawStars(t);
+    typed.textContent = typeMsg.slice(0, Math.floor(typer.n));
+    $("#tc").textContent = "00:" + String(Math.floor(t)).padStart(2, "0");
+  }
+
+  window.__DUR = DUR;
+  window.__seek = (t) => { tl.seek(t, false); paint(t); };
+
+  if (!RENDER) {
+    const start = () => document.fonts.ready.then(() => { tl.restart(); });
+    gsap.ticker.add(() => paint(tl.time()));
+    tl.eventCallback("onComplete", () => setTimeout(() => tl.restart(), 600));
+    addEventListener("pointerdown", () => tl.restart());
+    start();
+  }
+})();
+</script>
+</body>
+</html>
