@@ -157,3 +157,40 @@ function hud(t, subs, tags) {
   const g = tags.find(g => t >= g.a && t < g.b);
   elTag.style.display = g ? 'block' : 'none'; if (g) { elTag.textContent = g.txt; elTag.style.opacity = clamp((g.b - t) * 4); }
 }
+
+// ---------- construção de cenário ----------
+// repete uma textura com outro "repeat" (mesma imagem)
+function rep(t, rx, ry) { const c = t.clone(); c.needsUpdate = true; c.repeat.set(rx, ry); return c; }
+// parede vertical entre (x1,z1) e (x2,z2), de y0 a y1
+function parede(x1, z1, x2, z2, y0, y1, material) {
+  const len = Math.hypot(x2 - x1, z2 - z1);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(len, y1 - y0), material);
+  m.material.side = THREE.DoubleSide;
+  m.position.set((x1 + x2) / 2, (y0 + y1) / 2, (z1 + z2) / 2);
+  m.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
+  scene.add(m); return m;
+}
+// piso ou teto horizontal
+function laje(x1, z1, x2, z2, y, material) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(x2 - x1), Math.abs(z2 - z1)), material);
+  m.material.side = THREE.DoubleSide; m.rotation.x = -Math.PI / 2;
+  m.position.set((x1 + x2) / 2, y, (z1 + z2) / 2); scene.add(m); return m;
+}
+// quadro plano com textura (placas, retratos, relógios)
+function quadro(w, h, t, x, y, z, rotY = 0, parent = scene) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), flat('#ffffff', { map: t, side: THREE.DoubleSide }));
+  m.position.set(x, y, z); m.rotation.y = rotY; parent.add(m); return m;
+}
+// interpola uma lista de chaves [{t, ...numeros}] com suavização
+function chave(keys, t) {
+  if (t <= keys[0].t) return keys[0];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const a = keys[i], b = keys[i + 1];
+    if (t <= b.t) { const u = ease((t - a.t) / (b.t - a.t)), o = {};
+      for (const k in b) if (k !== 't') o[k] = lerp(a[k] ?? b[k], b[k], u); return o; }
+  }
+  return keys[keys.length - 1];
+}
+// enquete final
+const elPoll = document.getElementById('poll');
+function enquete(k) { if (elPoll) { elPoll.style.display = k > 0 ? 'block' : 'none'; elPoll.style.opacity = k; } }
