@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden}
+  canvas{display:block}
+  #sub{position:absolute;left:60px;right:60px;top:1235px;text-align:center;
+    font:bold 44px "DejaVu Sans",Verdana,sans-serif;line-height:1.22;
+    -webkit-text-stroke:9px #17121c;paint-order:stroke fill;letter-spacing:.2px}
+  #tag{position:absolute;left:50%;top:92px;transform:translateX(-50%);
+    font:bold 40px "DejaVu Sans",Verdana,sans-serif;color:#fff;background:#d5232f;
+    border:5px solid #17121c;border-radius:14px;padding:8px 26px;white-space:nowrap}
+</style></head>
+<body><div id="stage"><canvas id="gl"></canvas><div id="tag"></div><div id="sub"></div></div>
+<script src="node_modules/three/build/three.min.js"></script>
+<script src="engine.js"></script>
+<script src="personagens.js"></script>
+<script src="cena_teste.js"></script>
+</body></html>
