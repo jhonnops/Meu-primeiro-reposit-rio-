@@ -211,7 +211,15 @@ const SUBS = [
   { a: 72.0, b: 75.0, txt: 'Não olha pra baixo.', cor: ROSA, q: 'nina' },
 ];
 const TAGS = [{ a: 0.4, b: 3.2, txt: 'PARTE 1' }, { a: T_NOVE + 0.2, b: T_NOVE + 2.6, txt: '21:00' }];
-const fala = (q, t) => SUBS.some(s => s.q === q && t >= s.a && t < s.b);
+// tempos reais das falas gravadas (falas_ep1.js) e boca guiada pelo volume da voz
+if (typeof FALAS !== 'undefined') SUBS.forEach((s, i) => { s.fa = FALAS[i].a; s.fb = FALAS[i].b; s.a = FALAS[i].a - 0.05; s.b = Math.max(FALAS[i].b + 0.4, FALAS[i].a + 1.0); });
+const fala = (q, t) => SUBS.some(s => s.q === q && t >= (s.fa ?? s.a) && t < (s.fb ?? s.b));
+function bocaVoz(t, baixa) {
+  if (typeof BOCA_NIVEL === 'undefined') return bocaFalando(t);
+  const f = Math.round(t * FPS), n = +(BOCA_NIVEL[f] || 0) / 9;
+  if (n < 0.12) return 'fechada'; if (n < 0.42 || baixa) return 'meia'; if (n < 0.78) return 'aberta';
+  return (f >> 1) % 2 ? 'o' : 'aberta';
+}
 document.getElementById('opA').textContent = 'A) OLHAR DEBAIXO DA CAMA';
 document.getElementById('opB').textContent = 'B) FINGIR QUE DORMIU';
 
@@ -355,7 +363,7 @@ function renderFrame(i) {
     const falando = fala('nina', t);
     posaPersonagem(nina, { semPernas: true, maoD, maoE,
       respira: 0.008 * Math.sin(t * 3.1),
-      boca: falando ? (fim || t < 6 ? (bocaFalando(t) === 'aberta' ? 'meia' : bocaFalando(t) === 'o' ? 'meia' : 'fechada') : bocaFalando(t)) : (fim ? 'meia' : 'fechada'),
+      boca: falando ? bocaVoz(t, t < 6) : (fim ? 'meia' : 'fechada'),
       sobr: fim ? -1 : volta > 0 ? -1 : -0.45, arregala: fim ? 1 : volta * 0.7,
       olhar: fim ? [0.35, -0.85] : relog > 0.5 ? [0.3, 0.4] : [0, 0.15],
       piscar: fim ? 0 : piscada(t, 2.9, 0.4),
@@ -379,8 +387,8 @@ function renderFrame(i) {
   const olhaBaixo = ease(seg(t, T_CINCO + 0.2, T_CINCO + 0.9));
   posaPersonagem(vo, { inclina: kv.inc, maoD, maoE,
     respira: 0.012 * Math.abs(Math.sin(t * 5.5)) * andando,
-    boca: fala('vo', t) ? (cinco ? (bocaFalando(t) === 'fechada' ? 'sorrisinho' : 'sorriso') : bocaFalando(t, 5)) : (cinco ? (sorri > 0.5 ? 'sorriso' : 'sorrisinho') : t > T_SAI ? 'sorrisinho' : 'fechada'),
-    sobr: cinco ? 0.5 : 0.1, arregala: cinco ? 0.6 * sorri : 0,
+    boca: fala('vo', t) ? (cinco ? (bocaVoz(t) === 'fechada' ? 'sorrisinho' : 'sorriso') : bocaVoz(t)) : (cinco ? (sorri > 0.5 ? 'sorriso' : 'sorrisinho') : t > T_SAI ? 'sorrisinho' : 'fechada'),
+    sobr: cinco ? 0.85 * sorri : 0.1, arregala: cinco ? 0.3 * sorri : 0,
     olhar: cinco ? [0, lerp(0.1, -0.9, olhaBaixo)] : contando && idx < 3 ? [0.3 * (idx === 2 ? 1 : -1), -0.2] : [0, -0.1],
     piscar: cinco ? 0 : piscada(t, 3.4, 1.1),
     cabecaX: -kv.inc * 0.85, cabecaY: contando && idx < 3 ? [0.55, 0.3, -0.55][idx] * ease(seg(t, T_CONTA[idx] - 0.35, T_CONTA[idx])) : 0,

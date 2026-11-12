@@ -22,6 +22,7 @@
 <script src="personagens.js"></script>
 <script>
   const cena = new URLSearchParams(location.search).get('cena') || 'ep1';
-  const s = document.createElement('script'); s.src = 'cena_' + cena + '.js'; document.body.appendChild(s);
+  const carrega = (src, depois) => { const s = document.createElement('script'); s.src = src; s.onload = s.onerror = depois || null; document.body.appendChild(s); };
+  carrega('falas_' + cena + '.js', () => carrega('cena_' + cena + '.js'));   // falas gravadas são opcionais
 </script>
 </body></html>

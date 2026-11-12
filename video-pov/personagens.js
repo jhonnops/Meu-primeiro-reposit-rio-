@@ -3,7 +3,7 @@
 
 const BOCAS = {            // formas de boca [largura, altura]
   fechada: [1.0, 0.16], meia: [0.85, 0.55], aberta: [0.8, 1.0], o: [0.55, 0.85], susto: [0.7, 1.35],
-  sorrisinho: [1.5, 0.2], sorriso: [1.9, 0.62],
+  sorrisinho: [1.5, 0.2], sorriso: [2.0, 0.42],
 };
 const QUADRIL = 0.78;
 
