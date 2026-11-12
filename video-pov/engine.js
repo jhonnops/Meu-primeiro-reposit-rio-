@@ -89,7 +89,9 @@ postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
 
 function drawFrame() {
   scene.overrideMaterial = null;
+  camera.layers.enable(1);                 // camada 1 = brilhos/efeitos: só entram na cor, não no contorno
   renderer.setRenderTarget(rtColor); renderer.render(scene, camera);
+  camera.layers.disable(1);
   scene.overrideMaterial = normalMat;
   renderer.setRenderTarget(rtNormal); renderer.render(scene, camera);
   scene.overrideMaterial = null;
@@ -194,3 +196,22 @@ function chave(keys, t) {
 // enquete final
 const elPoll = document.getElementById('poll');
 function enquete(k) { if (elPoll) { elPoll.style.display = k > 0 ? 'block' : 'none'; elPoll.style.opacity = k; } }
+
+// brilho falso (aditivo, sem contorno): poça de luz no chão ou halo
+const tBrilho = tex(128, 128, (g, w) => { const gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.5, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); });
+function brilho(x, y, z, raio, cor, deitado = true, parent = scene) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(raio * 2, raio * 2), new THREE.MeshBasicMaterial({ map: tBrilho, color: cor, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  if (deitado) m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.layers.set(1); parent.add(m); return m;
+}
+// conjunto fixo de luzes pontuais: a cada quadro ficam com as fontes mais relevantes para a câmera
+function criaLuzes(n = 6) {
+  const pool = []; for (let i = 0; i < n; i++) { const l = new THREE.PointLight('#fff', 0, 10, 1.3); scene.add(l); pool.push(l); }
+  const fontes = [];
+  return { fontes, add(f) { fontes.push(f); return f; },     // f: { pos:Vector3, cor, int, dist }
+    aplica(olho) {
+      const v = fontes.filter(f => f.int > 0.01).map(f => ({ f, s: f.int * (f.dist || 10) / (f.pos.distanceToSquared(olho) + 6) })).sort((a, b) => b.s - a.s);
+      pool.forEach((l, i) => { const e = v[i]; if (!e) { l.intensity = 0; return; }
+        l.position.copy(e.f.pos); l.color.set(e.f.cor); l.intensity = e.f.int; l.distance = e.f.dist || 10; });
+    } };
+}

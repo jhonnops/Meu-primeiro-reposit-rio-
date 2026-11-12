@@ -6,6 +6,7 @@ Motor para vídeos verticais em primeira pessoa com cara de desenho sobre 3D
 - `engine.js` — render three.js, lente, contorno, legendas
 - `personagens.js` — personagem caricato e corpo em primeira pessoa
 - `cena_teste.js` / `audio.py` — teste de estilo de 10 s
+- `cena_ep2.js` / `audio_ep2.py` — "Fica na Luz", episódio 1 (~85 s); renderiza com `CENA=ep2`
 - `cena_ep1.js` / `audio_ep1.py` — "A Casa da Vó Dalva", episódio 1 (~81 s)
 - `render.js` — grava os quadros com o Chromium do Playwright
 

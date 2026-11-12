@@ -12,14 +12,14 @@ const QUADRIL = 0.78;
 function criaPersonagem(o) {
   const g = new THREE.Group(); scene.add(g);
   const pele = mat(o.pele), roupa = mat(o.roupa), calca = mat(o.calca || '#333'), cabelo = mat(o.cabelo);
-  const preto = flat('#17121c'), branco = flat('#f6f1ea');
+  const preto = flat('#17121c'), branco = o.fosco ? mat('#f6f1ea') : flat('#f6f1ea');
   const P = { g, o };
   const sup = P.sup = new THREE.Group(); sup.position.y = QUADRIL; g.add(sup);   // tudo acima do quadril
 
   P.tronco = ball(0.17, roupa, 0, 0.2, 0, sup, 1, 1.35, 0.72);
   if (o.xale) ball(0.2, mat(o.xale), 0, 0.33, -0.01, sup, 1.12, 0.62, 0.86);
   P.legs = [limb(0.052, calca, g), limb(0.052, calca, g)];
-  P.pes = [0, 1].map(() => ball(0.07, mat(o.tenis || '#f2efe8'), 0, 0, 0, g, 0.8, 0.55, 1.35));
+  P.pes = [0, 1].map(() => ball(0.07, o.tenisLuz ? flat(o.tenis || '#f2efe8') : mat(o.tenis || '#f2efe8'), 0, 0, 0, g, 0.8, 0.55, 1.35));
   if (o.saia) { P.saia = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.27, 0.74, 20), mat(o.saia)); P.saia.position.y = 0.42; g.add(P.saia); }
   P.bracos = [limb(0.042, roupa, sup), limb(0.042, roupa, sup)];
   P.maos = [ball(0.05, pele, 0, 0, 0, sup), ball(0.05, pele, 0, 0, 0, sup)];
@@ -29,7 +29,7 @@ function criaPersonagem(o) {
   const calota = new THREE.Mesh(new THREE.SphereGeometry(0.232, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.5), cabelo);
   calota.rotation.x = -0.42; calota.position.y = 0.012; h.add(calota);
   if (o.penteado === 'coque') ball(0.1, cabelo, 0, 0.23, -0.1, h);
-  else { ball(0.085, cabelo, -0.17, 0.2, -0.04, h); ball(0.085, cabelo, 0.17, 0.2, -0.04, h);
+  else if (o.penteado !== 'curto') { ball(0.085, cabelo, -0.17, 0.2, -0.04, h); ball(0.085, cabelo, 0.17, 0.2, -0.04, h);
     box(0.06, 0.022, 0.03, mat(o.presilha || '#f2c230'), 0.13, 0.13, 0.17, h).rotation.z = -0.5; }
   P.olhos = [-1, 1].map(s => {
     const e = new THREE.Group(); e.position.set(s * 0.082, 0.028, 0.176); h.add(e);
@@ -45,7 +45,7 @@ function criaPersonagem(o) {
   }
   ball(0.03, mat(o.nariz || o.pele), 0, -0.04, 0.212, h);
   P.boca = ball(0.042, flat('#4a1522'), 0, -0.112, 0.186, h, 1, 0.16, 0.3);
-  P.dentes = box(0.12, 0.022, 0.012, flat('#f3ecd8'), 0, -0.1, 0.199, h); P.dentes.visible = false;
+  P.dentes = box(0.12, 0.022, 0.012, o.fosco ? mat('#f3ecd8') : flat('#f3ecd8'), 0, -0.1, 0.199, h); P.dentes.visible = false;
   P.sobr = [-1, 1].map(s => { const b = box(0.085, 0.017, 0.012, o.sobrCor ? flat(o.sobrCor) : preto, s * 0.082, 0.128, 0.19, h); b.userData.s = s; return b; });
 
   const st = tex(128, 128, (c, w) => { const gr = c.createRadialGradient(w / 2, w / 2, 4, w / 2, w / 2, w / 2);
